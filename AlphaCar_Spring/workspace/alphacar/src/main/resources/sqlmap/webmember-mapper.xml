@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="webmember.mapper">
+
+	<!-- 자동 로그인 정보 저장 -->
+	<update id="login_info">
+		update customer set com_name = #{com_name},
+							ip_addr	= #{ip_addr},
+							login_time = sysdate,
+							auto_login	= 'Y'
+		where customer_email = #{customer_email}
+	</update>
+	
+	<!-- 자동 로그인 하기 -->
+	<select id="auto_login" resultType="member.WebMemberVO">
+		select * from customer where com_name = #{com_name} and ip_addr = #{ip_addr} and auto_login = #{auto_login}
+			and round(sysdate -  #{login_time}) = 0 and customer_email = #{customer_email}
+	</select>
+
+	<!-- 로그인 (id, pw 일치 여부 조회) -->
+	<select id="member_login" resultType="member.WebMemberVO">
+		select * from customer
+		where customer_email = #{customer_email, jdbcType=VARCHAR}
+		and customer_pw = #{customer_pw}	
+	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="member_join">
+		insert into customer (customer_email, customer_pw, customer_name, customer_picture, admin,city,addr)
+		values (#{customer_email}, #{customer_pw}, #{customer_name}, #{customer_picture, jdbcType=VARCHAR}, #{admin},
+			#{city}, #{addr})
+	</insert>
+
+	<!-- 아이디 중복 체크 -->
+	<select id="id_check" resultType="integer">
+		select count(*) from customer
+		where customer_email = #{id}
+	</select>
+	
+	<!-- social_email 존재 여부 조회 (소셜 로그인 이력 조회) -->
+	<select id="social_email" resultType="integer">
+		select count(*) from customer
+		where kakao = #{kakao}
+	</select>
+	
+	<update id="social_update">
+		update customer set customer_name = #{customer_name}
+		where kakao = #{kakao}
+	</update>
+	
+	<insert id="social_insert">
+		insert into customer (customer_email, customer_name, kakao, social, admin)
+		values ( #{customer_email}, #{customer_name}, #{kakao}, #{social}, 'C')
+	</insert>
+	
+	<select id="social_login" resultType="member.WebMemberVO">
+		select * from customer
+		where kakao = #{kakao}
+	</select>
+</mapper>
